@@ -1,0 +1,405 @@
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <arpa/inet.h>
+
+#define portno1 21340
+#define portno2 22340
+#define portno3 23340
+#define portno4 24340
+#define portcli 25340 
+#define localhost "127.0.0.1"
+
+int main()
+{
+
+    int k,h=0,a1,b1,u,v,i=0,j=0,i1,r1,r2,j1,ne=1;
+    int sockfd,childfd,o,udsock,udsock1,udsock3,udsock4,n,l;
+    int fsize = 0;
+    int size,size4,q;
+    int a[4][4]={0};
+    char buftcp[1000];
+    char s0[1000]={};
+    char s1[1000]={};
+    char s2[1000]={};
+    char s3[1000]={};
+    char s4[1000]={};
+    char s5[1000]={};
+    char s6[1000]={};
+    char *p=buftcp;
+    char s[100];
+    char s11[1000]={};
+    int c[4][4];
+    char * mytokn;
+    int portno,portnoa,portD,portnob,portnoc;
+    int clitcp,servtcp,cliAudp,cliBudp,cliCudp,cliDudp;
+    int fci;
+    
+    char t1[4]={};
+    t1[0]='A';
+    t1[1]='B';
+    t1[2]='C';
+    t1[3]='D';
+    
+
+    
+    memset(buftcp, '0', sizeof(buftcp));
+    memset(s1, '0', sizeof(s1));
+
+    struct sockaddr_in serv_addr,cli_addr, servA_addr1, cliA_addr1, servB_addr1,cliB_addr1, servC_addr1,cliC_addr1, servD_addr1,cliD_addr1;
+    
+    clitcp=sizeof(cli_addr);
+    servtcp=sizeof(serv_addr);  
+ 
+    cliAudp=sizeof(cliA_addr1);
+    cliBudp=sizeof(cliB_addr1);
+    cliCudp=sizeof(cliC_addr1);
+    cliDudp=sizeof(cliD_addr1);
+ 
+    if((sockfd = socket(AF_INET, SOCK_STREAM, 0))< 0)
+    {
+        printf("\n Error : Could not create socket \n");
+        
+    }
+     
+    udsock=socket(AF_INET, SOCK_DGRAM,0);
+    udsock1=socket(AF_INET, SOCK_DGRAM,0);
+    udsock3=socket(AF_INET, SOCK_DGRAM,0);
+    udsock4=socket(AF_INET, SOCK_DGRAM,0);
+
+    memset(&cliA_addr1, '0', sizeof(cliA_addr1));
+    memset(&cliB_addr1, '0', sizeof(cliB_addr1));
+    memset(&cliC_addr1, '0', sizeof(cliC_addr1));
+    memset(&cliD_addr1, '0', sizeof(cliD_addr1));
+
+    bzero((char *)&servA_addr1,sizeof(servA_addr1));
+    bzero((char *)&servB_addr1,sizeof(servB_addr1));
+    bzero((char *)&servC_addr1,sizeof(servC_addr1));
+    bzero((char *)&servD_addr1,sizeof(servD_addr1)); 
+    bzero((char *)&serv_addr,sizeof(serv_addr));
+    
+    servA_addr1.sin_family = AF_INET;
+    servA_addr1.sin_port = htons(portno1); // port
+    servA_addr1.sin_addr.s_addr = inet_addr(localhost);
+
+    servB_addr1.sin_family = AF_INET;
+    servB_addr1.sin_port = htons(portno2); // port
+    servB_addr1.sin_addr.s_addr = inet_addr(localhost);
+
+    servC_addr1.sin_family = AF_INET;
+    servC_addr1.sin_port = htons(portno3); // port
+    servC_addr1.sin_addr.s_addr = inet_addr(localhost);
+   
+    servD_addr1.sin_family = AF_INET;
+    servD_addr1.sin_port = htons(portno4); // port
+    servD_addr1.sin_addr.s_addr = inet_addr(localhost);
+    
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(portno); // port
+    serv_addr.sin_addr.s_addr = inet_addr(localhost);
+    
+    cli_addr.sin_family = AF_INET;
+    cli_addr.sin_port = htons(portcli); // port
+    cli_addr.sin_addr.s_addr = inet_addr(localhost);
+    
+    cliA_addr1.sin_family = AF_INET;
+    cliA_addr1.sin_port = htons(portnoa); // port
+    cliA_addr1.sin_addr.s_addr = inet_addr(localhost);
+
+    cliB_addr1.sin_family = AF_INET;
+    cliB_addr1.sin_port = htons(portnob); // port
+    cliB_addr1.sin_addr.s_addr = inet_addr(localhost);
+    
+    cliC_addr1.sin_family = AF_INET;
+    cliC_addr1.sin_port = htons(portnoc); // port
+    cliC_addr1.sin_addr.s_addr = inet_addr(localhost);
+
+    cliD_addr1.sin_family = AF_INET;
+    cliD_addr1.sin_port = htons(portD); // port
+    cliD_addr1.sin_addr.s_addr = inet_addr(localhost);
+
+    bind(sockfd, (struct sockaddr*)&cli_addr,sizeof(cli_addr));
+    bind(udsock, (struct sockaddr*)&cliA_addr1,sizeof(cliA_addr1));
+    bind(udsock1, (struct sockaddr*)&cliB_addr1,sizeof(cliB_addr1));
+   
+   bind(udsock3, (struct sockaddr*)&cliC_addr1,sizeof(cliC_addr1));
+ 
+
+    getsockname(sockfd,(struct sockaddr*)&serv_addr,&servtcp);
+    
+    getsockname(udsock3,(struct sockaddr*)&cliC_addr1,&cliCudp);
+    
+    fci=ntohs(cliC_addr1.sin_port);
+    
+
+   // printf("Client C UDP port %d ",fci);
+    
+    printf("The Client has TCP port number %d and IP address %s\n",ntohs(cli_addr.sin_port),inet_ntoa(cli_addr.sin_addr));
+ 
+    for(k=0;k<=3;k++)
+    {
+
+    l=listen(sockfd,4);
+    
+    if(l==-1)
+    {
+        printf("Failed to listen\n");
+        return -1;
+    }
+    
+    childfd = accept(sockfd, (struct sockaddr *)&serv_addr ,&servtcp); 
+    fsize = read(childfd, buftcp, sizeof(buftcp));
+        buftcp[fsize]='\0';
+        printf("The Client receivers neighbor information from the Server %c with TCP port %d and IP address %s\n",t1[k],ntohs(serv_addr.sin_port),inet_ntoa(serv_addr.sin_addr));
+        printf("\n\nThe Server %c has he following neighbor infromation:\n",t1[k]);
+        printf("%s",buftcp);
+        printf("\nFor this connection with the Server %c, The Client has TCP port number %d and IP address %s\n",t1[k],ntohs(cli_addr.sin_port),inet_ntoa(cli_addr.sin_addr));
+        mytokn = strtok(buftcp, "\n");
+
+        while(mytokn != NULL) 
+        {
+                j=-1;
+                j++;
+		sscanf(mytokn,"%s %d",s,&n);
+                if(strcmp(s,"serverA")==0)
+                a[i][j+h]=n; 
+                if(strcmp(s,"serverB")==0)
+                a[i][j+1+h]=n;
+                if(strcmp(s,"serverC")==0)
+                a[i][j+2+h]=n;
+                if(strcmp(s,"serverD")==0)
+                a[i][j+3+h]=n;
+                
+                mytokn = strtok (NULL, "\n");
+	}
+                printf("\n");
+    if(fsize < 0)
+    {
+        printf("\n Read Error \n");
+    }
+
+
+   
+    h=h+4;
+    
+    }
+    printf("\n");
+
+
+
+
+
+     
+   
+
+
+    
+    snprintf(s0,1000,"\nEDGE ------ COST\n");
+    strcat(s11,s0);
+    for(r1=0;r1<=3;r1++)
+    {
+    for(r2=0;r2<=3;r2++)
+    {
+    if((r1==0 && r2==1) && a[r1][r2]!=0)
+    {
+    snprintf(s1,1000,"AB %d\n",a[r1][r2]);
+    strcat(s11,s1);
+    }
+    if((r1==0 && r2==2) && a[r1][r2]!=0)
+    {
+    snprintf(s2,1000,"AC %d\n",a[r1][r2]);
+    strcat(s11,s2);
+    }
+    if((r1==0 && r2==3) && a[r1][r2]!=0)
+    {
+    snprintf(s3,1000,"AD %d\n",a[r1][r2]);
+    strcat(s11,s3);
+    }
+    if((r1==1 && r2==2) && a[r1][r2]!=0)
+    {
+    snprintf(s4,1000,"BC %d\n",a[r1][r2]);
+    strcat(s11,s4);
+    }
+    if((r1==1 && r2==3) && a[r1][r2]!=0)
+    {
+    snprintf(s5,1000,"BD %d\n",a[r1][r2]);
+    strcat(s11,s5);
+    }
+    if((r1==2 && r2==3) && a[r1][r2]!=0)
+    {
+    snprintf(s6,1000,"CD %d\n",a[r1][r2]);
+    strcat(s11,s6);
+    }
+}
+}
+//FIRST TIME
+
+    printf("\nThe Client has sent the network topology to the Server A with UDP port %d and IP address %s\n",ntohs(servA_addr1.sin_port),inet_ntoa(servA_addr1.sin_addr));
+
+printf("%s\n",s11);
+getsockname(udsock,(struct sockaddr*)&cliA_addr1,&cliAudp);
+printf("\nFor this connection with the ServerA, The Client has UDP port number %d and IP address %s\n",ntohs(cliA_addr1.sin_port),inet_ntoa(cliA_addr1.sin_addr));
+printf("\n");
+
+
+
+ //SECOND TIME
+getsockname(udsock1,(struct sockaddr*)&cliB_addr1,&cliBudp);
+    printf("\nThe Client has sent the network topology to the Server B with UDP port %d and IP address %s\n",ntohs(servB_addr1.sin_port),inet_ntoa(servB_addr1.sin_addr));
+
+printf("%s\n",s11);
+printf("\nFor this connection with the ServerB, The Client has UDP port number %d and IP address %s\n",ntohs(cliB_addr1.sin_port),inet_ntoa(cliB_addr1.sin_addr));
+printf("\n");
+
+
+
+//THIRD TIME
+   printf("\nThe Client has sent the network topology to the Server C with UDP port %d and IP address %s\n",ntohs(servC_addr1.sin_port),inet_ntoa(servC_addr1.sin_addr));
+    
+printf("%s\n",s11);
+printf("\nFor this connection with the ServerC, The Client has UDP port number %d and IP address %s\n",ntohs(cliC_addr1.sin_port),inet_ntoa(cliC_addr1.sin_addr));
+printf("\n");
+
+
+//FOURTH TIME
+ bind(udsock4, (struct sockaddr*)&cliD_addr1,sizeof(cliD_addr1));
+getsockname(udsock4,(struct sockaddr*)&cliD_addr1,&cliDudp);
+    printf("\nThe Client has sent the network topology to the Server D with UDP port %d and IP address %s\n",ntohs(servD_addr1.sin_port),inet_ntoa(servD_addr1.sin_addr));
+
+    
+printf("%s\n",s11);
+printf("\nFor this connection with the ServerD, The Client has UDP port number %d and IP address %s\n",ntohs(cliD_addr1.sin_port),inet_ntoa(cliD_addr1.sin_addr));
+printf("\n");
+
+ 
+ 
+
+
+
+sendto(udsock, s11, strlen(s11) , 0 , (struct sockaddr *) &servA_addr1, sizeof(servA_addr1));
+close(udsock);
+
+sendto(udsock1, s11, strlen(s11) , 0 , (struct sockaddr *) &servB_addr1, sizeof(servB_addr1));
+close(udsock1);
+
+sendto(udsock3, s11, strlen(s11) , 0 , (struct sockaddr *) &servC_addr1, sizeof(servC_addr1));
+close(udsock3);
+
+sendto(udsock4, s11, strlen(s11) , 0 , (struct sockaddr *) &servD_addr1, sizeof(servD_addr1));
+close(udsock4);
+
+close(childfd);
+
+
+
+int visited[10]={0},min,mincost=0,cost[10][10];
+
+ 
+ 
+ for(i1=0;i1<4;i1++)
+{
+  for(j1=0;j1<4;j1++)
+  {
+   cost[i1+1][j1+1]=a[i1][j1];
+   if(cost[i1+1][j1+1]==0)
+    cost[i1+1][j1+1]=2132846981;
+  }
+}
+ visited[1]=1;
+ 
+ while(ne<4)
+ {
+  for(i1=1,min=2132846981;i1<=4;i1++)
+  {
+   for(j1=1;j1<=4;j1++)
+    {
+    if(cost[i1][j1]<min)
+     if(visited[i1]!=0)
+     {
+      min=cost[i1][j1];
+      
+      a1=u=i1;
+      b1=v=j1;
+      
+     
+      if(visited[u]==0 || visited[v]==0)
+  {
+   mincost+=min;
+   visited[b1]=1;
+   ne=ne+1;
+  }
+     }
+ }
+}
+  
+  cost[a1][b1]=cost[b1][a1]=2132846981;
+ }
+printf("\nThe client has calculated a tree. The tree cost is %d\n",mincost);
+
+
+//TO PRINT EDGES
+int visite[10]={0};
+int cost1[10][10];
+ne=1,mincost=0;
+
+for(i1=0;i1<4;i1++)
+{
+  for(j1=0;j1<4;j1++)
+  {
+   cost1[i1+1][j1+1]=a[i1][j1];
+   if(cost1[i1+1][j1+1]==0)
+    cost1[i1+1][j1+1]=2132846981;
+  }
+}
+ visite[1]=1;
+
+ printf("EDGES ------ COST\n");
+ while(ne<4)
+ {
+  for(i1=1,min=2132846981;i1<=4;i1++)
+  {
+   for(j1=1;j1<=4;j1++)
+    {
+    if(cost1[i1][j1]<min)
+     if(visite[i1]!=0)
+     {
+      min=cost1[i1][j1];
+      
+      a1=u=i1;
+      b1=v=j1;
+      
+     
+      if(visite[u]==0 || visite[v]==0)
+  {
+
+   if((u==1) && (v==2))
+   printf("AB %d\n",min);
+   else if((u==1) && (v==3))
+   printf("AC %d\n",min);
+   else if((u==1) && (v==4))
+   printf("AD %d\n",min);
+   else if((u==2) && (v==3))
+   printf("BC %d\n",min);
+   else if((u==2) && (v==4))
+   printf("BD %d\n",min);
+   else if((u==3) && (v==4))
+   printf("CD %d\n",min);
+   mincost+=min;
+   visite[b1]=1;
+   ne=ne+1;
+  }
+     }
+ }
+}
+  
+  cost1[a1][b1]=cost1[b1][a1]=2132846981;
+ }
+}
+
